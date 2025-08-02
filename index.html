@@ -1,144 +1,137 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agendamento - Barbearia Estilo Fino</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+  <meta charset="UTF-8">
+  <title>Agendamento</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    .container { max-width: 500px; background: white; padding: 20px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h2, h3 { text-align: center; }
-    label { display: block; margin-top: 15px; font-weight: bold; }
-    input, select, textarea, button {
-      width: 100%; padding: 10px; margin-top: 5px;
-      border: 1px solid #ccc; border-radius: 5px;
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 30px auto;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    button { background: #2d89ef; color: white; border: none; cursor: pointer; }
-    button:hover { background: #1b5dbf; }
-    .hidden { display: none; }
+    input, select, textarea, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Barbearia Estilo Fino</h2>
-    <h3>Agende com o barbeiro João</h3>
 
-    <div id="step1">
-      <label for="data">Escolha o dia:</label>
-      <input type="text" id="data" placeholder="Selecione uma data" />
-      <button onclick="mostrarHorarios()">Próximo</button>
-    </div>
+  <h2>Agende seu horário</h2>
 
-    <div id="step2" class="hidden">
-      <label for="hora">Escolha o horário disponível:</label>
-      <select id="hora">
-        <option value="09:00">09:00</option>
-        <option value="09:30">09:30</option>
-        <option value="10:00">10:00</option>
-        <option value="10:30">10:30</option>
-        <option value="11:00">11:00</option>
-        <option value="11:30">11:30</option>
-        <option value="14:00">14:00</option>
-        <option value="14:30">14:30</option>
-        <option value="15:00">15:00</option>
-        <option value="15:30">15:30</option>
-        <option value="16:00">16:00</option>
-        <option value="16:30">16:30</option>
-      </select>
-      <button onclick="mostrarFormulario()">Próximo</button>
-    </div>
+  <form id="form-agendamento">
+    <input type="text" name="nome" placeholder="Nome" required />
+    <input type="tel" name="telefone" placeholder="Telefone" required />
+    <input type="date" name="data" required />
+    <select name="hora" id="hora" required></select>
+    <textarea name="obs" placeholder="Observações"></textarea>
+    <button type="submit">Agendar</button>
+  </form>
 
-    <div id="step3" class="hidden">
-      <label for="nome">Seu nome:</label>
-      <input type="text" id="nome" required />
-
-      <label for="telefone">Telefone:</label>
-      <input type="tel" id="telefone" required />
-
-      <label for="email">E-mail:</label>
-      <input type="email" id="email" required />
-
-      <label for="obs">Observações:</label>
-      <textarea id="obs" rows="3" placeholder="Ex: corte com degradê, barba completa..."></textarea>
-
-      <button id="btnAgendar">Agendar</button>
-    </div>
-
-    <div id="confirmacao" class="hidden">
-      <h3>Agendamento realizado com sucesso!</h3>
-      <p>Se precisar alterar o horário, entre em contato direto com o barbeiro João.</p>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
-    flatpickr("#data", {
-      minDate: "today",
-      dateFormat: "Y-m-d",
-      locale: {
-        firstDayOfWeek: 1,
-        weekdays: {
-          shorthand: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-          longhand: ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
-        },
-        months: {
-          shorthand: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-          longhand: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbz6Wb0_OGPBPSX-Bb6tGl3_RDbEKsXhmE3NJi2iahQ02ROjEFYweuONvsY3Z1my8Pz0/exec';
+
+    const horariosFixos = [];
+    for (let h = 8; h < 17; h++) {
+      horariosFixos.push(`${String(h).padStart(2, '0')}:00`);
+      horariosFixos.push(`${String(h).padStart(2, '0')}:30`);
+    }
+    horariosFixos.push("17:00");
+
+    const inputData = document.querySelector('input[name="data"]');
+    const selectHora = document.getElementById('hora');
+
+    // Define data mínima como hoje
+    const hoje = new Date().toISOString().split('T')[0];
+    inputData.min = hoje;
+
+    inputData.addEventListener('change', async () => {
+      const dataISO = inputData.value;
+      if (!dataISO) return;
+
+      const [ano, mes, dia] = dataISO.split('-');
+      const dataBR = `${dia}/${mes}/${ano}`;
+
+      try {
+        const res = await fetch(`${scriptUrl}?data=${encodeURIComponent(dataBR)}`);
+        const ocupados = await res.json();
+
+        // Filtra os horários disponíveis
+        const disponiveis = horariosFixos.filter(h => !ocupados.includes(h));
+        selectHora.innerHTML = '';
+
+        if (disponiveis.length === 0) {
+          const op = document.createElement('option');
+          op.textContent = 'Sem horários disponíveis';
+          op.disabled = true;
+          selectHora.appendChild(op);
+          selectHora.disabled = true;
+        } else {
+          disponiveis.forEach(hora => {
+            const op = document.createElement('option');
+            op.value = hora;
+            op.textContent = hora;
+            selectHora.appendChild(op);
+          });
+          selectHora.disabled = false;
         }
+      } catch (err) {
+        alert('Erro ao buscar horários. Tente novamente.');
+        console.error(err);
       }
     });
 
-    function mostrarHorarios() {
-      const data = document.getElementById("data").value;
-      if (!data) return alert("Escolha uma data.");
-      document.getElementById("step1").classList.add("hidden");
-      document.getElementById("step2").classList.remove("hidden");
-    }
+    // Envio do formulário
+    document.getElementById('form-agendamento').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
 
-    function mostrarFormulario() {
-      const hora = document.getElementById("hora").value;
-      if (!hora) return alert("Escolha um horário.");
-      document.getElementById("step2").classList.add("hidden");
-      document.getElementById("step3").classList.remove("hidden");
-    }
+      // Converte data para dd/mm/yyyy
+      const partes = data.data.split('-');
+      data.data = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
-    document.getElementById("btnAgendar").addEventListener("click", function () {
-      const nome = document.getElementById("nome").value.trim();
-      const telefone = document.getElementById("telefone").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const obs = document.getElementById("obs").value.trim();
-      const data = document.getElementById("data").value.trim();
-      const hora = document.getElementById("hora").value.trim();
+      // Garante formato "HH:mm" para a hora
+      data.hora = data.hora.slice(0, 5);
 
-      if (!nome || !telefone || !email || !data || !hora) {
-        alert("Por favor, preencha todos os campos obrigatórios.");
-        return;
-      }
-
-      const dados = { nome, telefone, email, obs, data, hora };
-
-      fetch("https://script.google.com/macros/s/AKfycbxaNhwnScJasg1fpq3_woxg2cjVnl6knOAnFDiHw8ZdHmdd2aaAYlL2Stj2rzWxPghe/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dados)
-      })
-        .then(() => {
-          document.getElementById("step3").classList.add("hidden");
-          document.getElementById("confirmacao").classList.remove("hidden");
-
-          // Limpa os campos
-          document.getElementById("nome").value = "";
-          document.getElementById("telefone").value = "";
-          document.getElementById("email").value = "";
-          document.getElementById("obs").value = "";
-        })
-        .catch((err) => {
-          console.error("Erro ao enviar agendamento:", err);
-          alert("Erro ao enviar. Tente novamente mais tarde.");
+      try {
+        const res = await fetch(scriptUrl, {
+          method: 'POST',
+          body: JSON.stringify(data)
         });
+
+        const texto = await res.text();
+
+        if (texto === 'OK') {
+          alert('✅ Agendamento realizado com sucesso!');
+          e.target.reset();
+          selectHora.innerHTML = '';
+        } else {
+          alert(`❌ Erro: ${texto}`);
+        }
+      } catch (err) {
+        alert('❌ Erro ao enviar agendamento.');
+        console.error(err);
+      }
     });
   </script>
+
 </body>
 </html>
