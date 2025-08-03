@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Agendamento</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
@@ -10,31 +10,41 @@
       --rosa-principal: #f48fb1;
       --rosa-escuro: #ec407a;
       --branco: #fff;
-      --cinza-claro: #eee;
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+      background: url("img.jpg") no-repeat center center fixed;
+      background-size: cover;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    .container {
-      background: var(--branco);
+    .overlay {
+      background-color: rgba(255, 255, 255, 0.9); /* Leve camada branca translúcida */
       padding: 30px 20px;
       border-radius: 20px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
       width: 90%;
       max-width: 400px;
+      opacity: 90%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header img {
+      max-height: 60px;
     }
 
     h2 {
@@ -50,7 +60,7 @@
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
-      transition: border 0.3s;
+      
     }
 
     input:focus, select:focus, textarea:focus {
@@ -60,7 +70,7 @@
 
     button {
       background: linear-gradient(to right, #ec407a, #f48fb1);
-      color: var(--branco);
+      color: white;
       font-weight: bold;
       cursor: pointer;
       border: none;
@@ -71,7 +81,18 @@
       background: linear-gradient(to right, #f06292, #f8bbd0);
     }
 
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+      margin-top: 15px;
+    }
+
     @media (max-width: 480px) {
+      .overlay {
+        padding: 20px 15px;
+      }
+
       h2 {
         font-size: 20px;
       }
@@ -80,8 +101,14 @@
 </head>
 <body>
 
-  <div class="container">
+  <div class="overlay">
+    <header>
+      <!-- Substitua o src pelo logo do cliente se desejar -->
+      <!-- <img src="logo.png" alt="Logo"> -->
+    </header>
+
     <h2>Agende seu horário</h2>
+
     <form id="form-agendamento">
       <input type="text" name="nome" placeholder="Seu nome completo" required />
       <input type="tel" name="telefone" placeholder="Telefone com DDD" required />
@@ -90,6 +117,10 @@
       <textarea name="obs" placeholder="Alguma observação?"></textarea>
       <button type="submit">Agendar</button>
     </form>
+
+    <footer>
+      © 2025 SeuNegócio - Todos os direitos reservados
+    </footer>
   </div>
 
   <script>
@@ -104,7 +135,6 @@
 
     const inputData = document.querySelector('input[name="data"]');
     const selectHora = document.getElementById('hora');
-
     const hoje = new Date().toISOString().split('T')[0];
     inputData.min = hoje;
 
