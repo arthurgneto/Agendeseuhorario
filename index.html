@@ -29,7 +29,7 @@
     }
 
     .overlay {
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.9); /* Leve camada branca translúcida */
       padding: 30px 20px;
       border-radius: 20px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
@@ -60,6 +60,7 @@
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
+      
     }
 
     input:focus, select:focus, textarea:focus {
@@ -78,19 +79,6 @@
 
     button:hover {
       background: linear-gradient(to right, #f06292, #f8bbd0);
-    }
-
-    .total-pagamento {
-      font-weight: bold;
-      font-size: 18px;
-      color: var(--rosa-escuro);
-      margin-bottom: 15px;
-      text-align: center;
-    }
-
-    textarea[readonly] {
-      background: #f9f9f9;
-      resize: none;
     }
 
     footer {
@@ -115,6 +103,7 @@
 
   <div class="overlay">
     <header>
+      <!-- Substitua o src pelo logo do cliente se desejar -->
       <!-- <img src="logo.png" alt="Logo"> -->
     </header>
 
@@ -125,20 +114,7 @@
       <input type="tel" name="telefone" placeholder="Telefone com DDD" required />
       <input type="date" name="data" required />
       <select name="hora" id="hora" required></select>
-
-      <label>Selecione os serviços:</label>
-      <div id="servicos-container" style="margin-bottom: 15px;">
-        <label><input type="checkbox" name="servicos" value="Corte masculino|40" /> Corte masculino - R$ 40,00</label><br>
-        <label><input type="checkbox" name="servicos" value="Barba|25" /> Barba - R$ 25,00</label><br>
-        <label><input type="checkbox" name="servicos" value="Corte + Barba|60" /> Corte + Barba - R$ 60,00</label><br>
-        <label><input type="checkbox" name="servicos" value="Lavagem|15" /> Lavagem - R$ 15,00</label><br>
-        <label><input type="checkbox" name="servicos" value="Tratamento Capilar|80" /> Tratamento Capilar - R$ 80,00</label><br>
-      </div>
-
-      <div class="total-pagamento">Total a pagar: R$ <span id="total">0,00</span></div>
-
-      <textarea name="obs" id="obs" placeholder="Observações" readonly rows="5"></textarea>
-
+      <textarea name="obs" placeholder="Alguma observação?"></textarea>
       <button type="submit">Agendar</button>
     </form>
 
@@ -159,10 +135,6 @@
 
     const inputData = document.querySelector('input[name="data"]');
     const selectHora = document.getElementById('hora');
-    const servicosContainer = document.getElementById('servicos-container');
-    const spanTotal = document.getElementById('total');
-    const textareaObs = document.getElementById('obs');
-
     const hoje = new Date().toISOString().split('T')[0];
     inputData.min = hoje;
 
@@ -201,68 +173,18 @@
       }
     });
 
-    servicosContainer.addEventListener('change', () => {
-      const checkboxes = servicosContainer.querySelectorAll('input[type="checkbox"]:checked');
-      let total = 0;
-      let listaServicos = [];
-
-      checkboxes.forEach(cb => {
-        const [nomeServico, precoStr] = cb.value.split('|');
-        const preco = Number(precoStr);
-        total += preco;
-        listaServicos.push(`${nomeServico} - R$ ${preco.toFixed(2).replace('.', ',')}`);
-      });
-
-      spanTotal.textContent = total.toFixed(2).replace('.', ',');
-      if(listaServicos.length > 0) {
-        textareaObs.value = `Serviços:\n${listaServicos.join('\n')}\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}`;
-      } else {
-        textareaObs.value = '';
-        spanTotal.textContent = "0,00";
-      }
-    });
-
     document.getElementById('form-agendamento').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
 
-      // Obter serviços selecionados como array
-      const servicosSelecionados = [];
-      for (const entry of formData.entries()) {
-        if(entry[0] === 'servicos') servicosSelecionados.push(entry[1]);
-      }
-
-      if(servicosSelecionados.length === 0){
-        alert('Selecione ao menos um serviço.');
-        return;
-      }
-
-      const data = {};
-      data.nome = formData.get('nome').trim();
-      data.telefone = formData.get('telefone').trim();
-
-      const partes = formData.get('data').split('-');
+      const partes = data.data.split('-');
       data.data = `${partes[2]}/${partes[1]}/${partes[0]}`;
-
-      data.hora = formData.get('hora').slice(0,5);
-
-      // Montar descrição dos serviços e total para enviar
-      let total = 0;
-      let descricao = [];
-      servicosSelecionados.forEach(servicoRaw => {
-        const [nomeS, precoStr] = servicoRaw.split('|');
-        const preco = Number(precoStr);
-        total += preco;
-        descricao.push(`${nomeS} - R$ ${preco.toFixed(2).replace('.', ',')}`);
-      });
-
-      data.obs = `Serviços:\n${descricao.join('\n')}\n\nTotal: R$ ${total.toFixed(2).replace('.', ',')}`;
+      data.hora = data.hora.slice(0, 5);
 
       try {
         const res = await fetch(scriptUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
@@ -272,13 +194,11 @@
           alert('✅ Agendamento realizado com sucesso!');
           e.target.reset();
           selectHora.innerHTML = '';
-          spanTotal.textContent = "0,00";
-          textareaObs.value = "";
         } else {
           alert(`❌ Erro: ${texto}`);
         }
       } catch (err) {
-        alert('❌ Erro ao enviar agendamento.');
+        alert('❌ Erro ao enviar agendamento');
         console.error(err);
       }
     });
@@ -286,4 +206,3 @@
 
 </body>
 </html>
-
