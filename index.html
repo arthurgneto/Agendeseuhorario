@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Agendamento</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento com PIX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
       --rosa-claro: #fce4ec;
@@ -11,13 +11,11 @@
       --rosa-escuro: #ec407a;
       --branco: #fff;
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: url("img.jpg") no-repeat center center fixed;
@@ -27,9 +25,8 @@
       justify-content: center;
       align-items: center;
     }
-
     .overlay {
-      background-color: rgba(255, 255, 255, 0.9); /* Leve camada branca translúcida */
+      background-color: rgba(255, 255, 255, 0.9);
       padding: 30px 20px;
       border-radius: 20px;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
@@ -37,22 +34,18 @@
       max-width: 400px;
       opacity: 90%;
     }
-
     header {
       text-align: center;
       margin-bottom: 20px;
     }
-
     header img {
       max-height: 60px;
     }
-
     h2 {
       text-align: center;
       color: var(--rosa-escuro);
       margin-bottom: 20px;
     }
-
     input, select, textarea, button {
       width: 100%;
       margin-bottom: 15px;
@@ -60,14 +53,11 @@
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
-      
     }
-
     input:focus, select:focus, textarea:focus {
       border-color: var(--rosa-principal);
       outline: none;
     }
-
     button {
       background: linear-gradient(to right, #ec407a, #f48fb1);
       color: white;
@@ -76,23 +66,26 @@
       border: none;
       transition: background 0.3s ease;
     }
-
     button:hover {
       background: linear-gradient(to right, #f06292, #f8bbd0);
     }
-
     footer {
       text-align: center;
       font-size: 12px;
       color: #777;
       margin-top: 15px;
     }
-
+    .total-pagamento {
+      font-weight: bold;
+      font-size: 18px;
+      color: var(--rosa-escuro);
+      margin-bottom: 15px;
+      text-align: center;
+    }
     @media (max-width: 480px) {
       .overlay {
         padding: 20px 15px;
       }
-
       h2 {
         font-size: 20px;
       }
@@ -103,7 +96,6 @@
 
   <div class="overlay">
     <header>
-      <!-- Substitua o src pelo logo do cliente se desejar -->
       <!-- <img src="logo.png" alt="Logo"> -->
     </header>
 
@@ -114,8 +106,29 @@
       <input type="tel" name="telefone" placeholder="Telefone com DDD" required />
       <input type="date" name="data" required />
       <select name="hora" id="hora" required></select>
-      <textarea name="obs" placeholder="Alguma observação?"></textarea>
-      <button type="submit">Agendar</button>
+
+      <label for="servico">Selecione o serviço:</label>
+      <select name="servico" id="servico" required>
+        <option value="" disabled selected>Escolha um serviço</option>
+        <option value="Corte masculino|40">Corte masculino - R$ 40,00</option>
+        <option value="Barba|25">Barba - R$ 25,00</option>
+        <option value="Corte + Barba|60">Corte + Barba - R$ 60,00</option>
+      </select>
+
+      <div class="total-pagamento">Total a pagar: R$ <span id="total">0,00</span></div>
+
+      <textarea name="obs" id="obs" placeholder="Observações" readonly></textarea>
+
+      <label for="pixcode">Código PIX:</label>
+      <textarea id="pixcode" readonly rows="3" style="font-family: monospace; font-size: 14px; user-select: all;">
+00020126580014BR.GOV.BCB.PIX0136+55 1234 5678 912345678901520400005303986540440.005802BR5909SeuNegócio6009Sua Cidade62070503***6304B14F
+      </textarea>
+      <button type="button" id="btn-copiar">Copiar código PIX</button>
+
+      <label for="comprovante">Link do comprovante PIX (cole aqui):</label>
+      <input type="url" name="comprovante" id="comprovante" placeholder="https://exemplo.com/comprovante.jpg" />
+
+      <button type="submit">Enviar agendamento</button>
     </form>
 
     <footer>
@@ -126,6 +139,7 @@
   <script>
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbz6Wb0_OGPBPSX-Bb6tGl3_RDbEKsXhmE3NJi2iahQ02ROjEFYweuONvsY3Z1my8Pz0/exec';
 
+    // Horários fixos para select hora
     const horariosFixos = [];
     for (let h = 8; h < 17; h++) {
       horariosFixos.push(`${String(h).padStart(2, '0')}:00`);
@@ -135,6 +149,12 @@
 
     const inputData = document.querySelector('input[name="data"]');
     const selectHora = document.getElementById('hora');
+    const selectServico = document.getElementById('servico');
+    const textareaObs = document.getElementById('obs');
+    const spanTotal = document.getElementById('total');
+    const btnCopiarPix = document.getElementById('btn-copiar');
+    const pixCodeTextarea = document.getElementById('pixcode');
+
     const hoje = new Date().toISOString().split('T')[0];
     inputData.min = hoje;
 
@@ -173,27 +193,64 @@
       }
     });
 
+    // Atualizar total e observação quando mudar serviço
+    selectServico.addEventListener('change', () => {
+      const valorRaw = selectServico.value;
+      if (!valorRaw) {
+        spanTotal.textContent = "0,00";
+        textareaObs.value = "";
+        return;
+      }
+
+      const [servico, precoStr] = valorRaw.split('|');
+      const preco = Number(precoStr);
+
+      spanTotal.textContent = preco.toFixed(2).replace('.', ',');
+
+      // Atualiza o campo observação com serviço e preço
+      textareaObs.value = `Serviço: ${servico} - Valor: R$ ${preco.toFixed(2).replace('.', ',')}`;
+    });
+
+    // Botão copiar código PIX
+    btnCopiarPix.addEventListener('click', () => {
+      pixCodeTextarea.select();
+      pixCodeTextarea.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      alert('Código PIX copiado para a área de transferência!');
+    });
+
+    // Enviar formulário
     document.getElementById('form-agendamento').addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const formData = new FormData(e.target);
       const data = Object.fromEntries(formData.entries());
 
+      // Ajustar data para formato dd/mm/yyyy
       const partes = data.data.split('-');
       data.data = `${partes[2]}/${partes[1]}/${partes[0]}`;
-      data.hora = data.hora.slice(0, 5);
+
+      // Limitar hora para HH:mm (se necessário)
+      data.hora = data.hora.slice(0,5);
+
+      // Obs já está atualizada pelo serviço, não acrescentamos o comprovante na obs para não repetir
+      // comprovante vai no campo próprio e será salvo na planilha
 
       try {
         const res = await fetch(scriptUrl, {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
         const texto = await res.text();
 
         if (texto === 'OK') {
-          alert('✅ Agendamento realizado com sucesso!');
+          alert('✅ Agendamento realizado com sucesso! Aguarde o contato para confirmação.');
           e.target.reset();
           selectHora.innerHTML = '';
+          spanTotal.textContent = "0,00";
+          textareaObs.value = "";
         } else {
           alert(`❌ Erro: ${texto}`);
         }
@@ -203,6 +260,5 @@
       }
     });
   </script>
-
 </body>
 </html>
