@@ -21,7 +21,7 @@
             }
         }
     </script>
-  <style>
+    <style>
         /* Estilização para o gradiente e o efeito de vidro fosco */
         body {
             font-family: 'Inter', sans-serif;
@@ -68,83 +68,76 @@
         }
 
         button i {
-  margin-right: 6px;
-}
+            margin-right: 6px;
+        }
 
-button {
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  transition: all 0.3s ease;
-  margin: 5px;
-}
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
 
-/* WhatsApp */
-.btn-whatsapp {
-  background-color: #25d366;
- 
-}
-.btn-whatsapp:hover {
-  background-color: #1ebd5a;
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
-  
-}
+        /* WhatsApp */
+        .btn-whatsapp {
+            background-color: #25d366;
+            
+        }
+        .btn-whatsapp:hover {
+            background-color: #1ebd5a;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+            
+        }
 
-.btn-whatsapp{
-  
-}
+        .btn-whatsapp{
+            
+        }
 
-/* Editar */
-.btn-editar {
-  background-color: #f0ad4e;
-}
-.btn-editar:hover {
-  background-color: #ec971f;
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(240, 173, 78, 0.4);
-}
+        /* Editar */
+        .btn-editar {
+            background-color: #f0ad4e;
+        }
+        .btn-editar:hover {
+            background-color: #ec971f;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(240, 173, 78, 0.4);
+        }
 
-/* Excluir */
-.btn-excluir {
-  background-color: #d9534f;
-}
-.btn-excluir:hover {
-  background-color: #c9302c;
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(217, 83, 79, 0.4);
-}
+        /* Excluir */
+        .btn-excluir {
+            background-color: #d9534f;
+        }
+        .btn-excluir:hover {
+            background-color: #c9302c;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(217, 83, 79, 0.4);
+        }
 
-/* Confirmar */
-.btn-confirmar {
-  background-color: #5cb85c;
-}
-.btn-confirmar:hover {
-  background-color: #449d44;
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(92, 184, 92, 0.4);
-}
-
-
-
-        
+        /* Confirmar */
+        .btn-confirmar {
+            background-color: #5cb85c;
+        }
+        .btn-confirmar:hover {
+            background-color: #449d44;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(92, 184, 92, 0.4);
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 gap-8">
     
-    <!-- NOVO: Elemento de áudio para o alerta -->
     <audio id="notificationSound" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="auto"></audio>
 
-    <!-- Painel de Agendamento -->
     <div class="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 space-y-6">
         <h1 class="text-3xl font-bold text-center text-gray-800">Agendamento</h1>
         <p class="text-center text-gray-500">Paloma Nicacio</p>
 
-        <!-- Formulário de Agendamento -->
         <form id="scheduleForm" class="space-y-4">
             <div>
                 <label for="clientName" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
@@ -192,11 +185,9 @@ button {
             </div>
         </form>
 
-        <!-- Área de Mensagem (Feedback para o usuário) -->
         <div id="messageBox" class="p-4 text-center rounded-md text-sm transition-all duration-300 ease-in-out hidden"></div>
     </div>
 
-    <!-- Visualização do Calendário e Painel de Resumo -->
     <div class="flex flex-col gap-8 w-full max-w-xl">
         <div class="bg-white shadow-xl rounded-2xl p-8 space-y-6">
             <div class="flex items-center justify-between">
@@ -222,15 +213,12 @@ button {
                 <span>Sáb</span>
             </div>
             <div id="calendar-grid" class="grid grid-cols-7 gap-1">
-                <!-- As células do calendário serão geradas aqui pelo JS -->
-            </div>
+                </div>
         </div>
         
-        <!-- Painel de Resumo de Agendamentos -->
         <div id="appointments-panel-container" class="bg-white shadow-xl rounded-2xl p-8 space-y-4">
             <h2 class="text-2xl font-bold text-center text-gray-800">Resumo de Agendamentos</h2>
             <div id="appointments-panel" class="space-y-4">
-                <!-- A lista de agendamentos será gerada aqui pelo JS -->
                 <p class="text-center text-gray-500" id="no-appointments-message">Nenhum agendamento encontrado.</p>
             </div>
         </div>
@@ -239,13 +227,8 @@ button {
     <script>
         // --- JavaScript para o Agendamento, Calendário e Painel de Resumo ---
 
-        // Dados de simulação
-        let mockEvents = [
-            { id: 1, clientName: 'Ana Maria', clientPhone: '5511987654321', serviceType: 'Corte e Escova', servicePrice: 150.00, notes: 'Cliente preferiu o horario da tarde', start: '2025-08-20T10:00:00', end: '2025-08-20T11:00:00' },
-            { id: 2, clientName: 'Dr. Smith', clientPhone: '', serviceType: 'Consulta', servicePrice: 200.00, notes: '', start: '2025-08-22T15:30:00', end: '2025-08-22T16:00:00' },
-            { id: 3, clientName: 'Empresa ABC', clientPhone: '', serviceType: 'Visita Técnica', servicePrice: 500.00, notes: '', start: '2025-08-25T11:00:00', end: '2025-08-25T12:00:00' },
-            { id: 4, clientName: 'Novo evento', clientPhone: '', serviceType: 'Serviço Agendado', servicePrice: 75.00, notes: '', start: '2025-09-05T14:00:00', end: '2025-09-05T15:00:00' },
-        ];
+        // Dados de simulação (agora vazio para não mostrar clientes de teste)
+        let mockEvents = [];
 
         let currentViewDate = new Date();
         const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -283,7 +266,7 @@ button {
         function resetForm() {
             scheduleForm.reset();
             editingEventId = null;
-            scheduleButton.querySelector('span').textContent = 'Confirmar Pagamento';
+            scheduleButton.querySelector('span').textContent = 'Confirmar Agendamento';
             cancelEditButton.classList.add('hidden');
         }
         
@@ -367,6 +350,16 @@ button {
             }, 1500));
         }
 
+        // Nova função para confirmar a exclusão
+        function confirmDelete(eventId) {
+            const confirmacao = confirm('Tem certeza que deseja excluir? Esta ação não pode ser desfeita.');
+            if (confirmacao) {
+                deleteEvent(eventId);
+            } else {
+                showMessage("Exclusão cancelada.", 'info');
+            }
+        }
+        
         // Função para excluir um evento
         function deleteEvent(eventId) {
             mockEvents = mockEvents.filter(event => event.id !== eventId);
@@ -481,7 +474,7 @@ button {
                 scheduleButton.disabled = false;
                 loadingSpinner.classList.add('hidden');
                 if (!editingEventId) {
-                     scheduleButton.querySelector('span').textContent = 'Confirmar Pagamento';
+                     scheduleButton.querySelector('span').textContent = 'Confirmar Agendamento';
                 }
             }
         });
@@ -564,46 +557,46 @@ button {
 
         // Renderiza o painel de resumo de agendamentos
         // Função para renderizar o painel de resumo de agendamentos
-function renderAppointmentsPanel() {
-    const panel = document.getElementById('appointments-panel');
-    panel.innerHTML = '';
+        function renderAppointmentsPanel() {
+            const panel = document.getElementById('appointments-panel');
+            panel.innerHTML = '';
 
-    const sortedEvents = [...mockEvents].sort((a, b) => new Date(a.start) - new Date(b.start));
+            const sortedEvents = [...mockEvents].sort((a, b) => new Date(a.start) - new Date(b.start));
 
-    if (sortedEvents.length === 0) {
-        panel.innerHTML = '<p class="text-center text-gray-500">Nenhum agendamento encontrado.</p>';
-        return;
-    }
+            if (sortedEvents.length === 0) {
+                panel.innerHTML = '<p class="text-center text-gray-500">Nenhum agendamento encontrado.</p>';
+                return;
+            }
 
-    sortedEvents.forEach(event => {
-        const startDate = new Date(event.start);
-        const dateStr = startDate.toLocaleDateString('pt-BR');
-        const timeStr = startDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            sortedEvents.forEach(event => {
+                const startDate = new Date(event.start);
+                const dateStr = startDate.toLocaleDateString('pt-BR');
+                const timeStr = startDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        const panelCard = document.createElement('div');
-        panelCard.classList.add('bg-gray-50', 'rounded-lg', 'p-4', 'shadow-sm', 'space-y-2');
-        panelCard.innerHTML = `
-            <p><strong>Data:</strong> ${dateStr}</p>
-            <p><strong>Hora:</strong> ${timeStr}</p>
-            <p><strong>Cliente:</strong> ${event.clientName}</p>
-            <p><strong>Telefone:</strong> ${event.clientPhone || 'Não informado'}</p>
-            <p><strong>Serviço:</strong> ${event.serviceType} - R$ ${event.servicePrice.toFixed(2)}</p>
-            <p><strong>Observações:</strong> ${event.notes || 'Nenhuma'}</p>
-            <div class="flex flex-col sm:flex-row gap-2 mt-4">
-                <a href="https://wa.me/${event.clientPhone}?text=${encodeURIComponent(`Olá ${event.clientName}, estou confirmando nosso agendamento para o dia ${dateStr} às ${timeStr}.`)}" target="_blank" class="btn-whatsapp flex-1 text-center">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </a>
-                <button onclick="editEvent(${event.id})" class="btn-editar flex-1">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button onclick="deleteEvent(${event.id})" class="btn-excluir flex-1">
-                    <i class="fas fa-trash-alt"></i> Excluir
-                </button>
-            </div>
-        `;
-        panel.appendChild(panelCard);
-    });
-}
+                const panelCard = document.createElement('div');
+                panelCard.classList.add('bg-gray-50', 'rounded-lg', 'p-4', 'shadow-sm', 'space-y-2');
+                panelCard.innerHTML = `
+                    <p><strong>Data:</strong> ${dateStr}</p>
+                    <p><strong>Hora:</strong> ${timeStr}</p>
+                    <p><strong>Cliente:</strong> ${event.clientName}</p>
+                    <p><strong>Telefone:</strong> ${event.clientPhone || 'Não informado'}</p>
+                    <p><strong>Serviço:</strong> ${event.serviceType} - R$ ${event.servicePrice.toFixed(2)}</p>
+                    <p><strong>Observações:</strong> ${event.notes || 'Nenhuma'}</p>
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                        <a href="https://wa.me/${event.clientPhone}?text=${encodeURIComponent(`Olá ${event.clientName}, estou confirmando nosso agendamento para o dia ${dateStr} às ${timeStr}.`)}" target="_blank" class="btn-whatsapp flex-1 text-center">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                        <button onclick="editEvent(${event.id})" class="btn-editar flex-1">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button onclick="confirmDelete(${event.id})" class="btn-excluir flex-1">
+                            <i class="fas fa-trash-alt"></i> Excluir
+                        </button>
+                    </div>
+                `;
+                panel.appendChild(panelCard);
+            });
+        }
 
         // NOVO: Função para checar agendamentos iminentes e disparar o alerta
         function checkUpcomingAppointments() {
@@ -643,7 +636,5 @@ function renderAppointmentsPanel() {
         };
 
     </script>
-
-
 </body>
 </html>
