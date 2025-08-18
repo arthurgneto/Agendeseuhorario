@@ -1,208 +1,394 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Agendamento</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    :root {
-      --rosa-claro: #fce4ec;
-      --rosa-principal: #f48fb1;
-      --rosa-escuro: #ec407a;
-      --branco: #fff;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: url("img.jpg") no-repeat center center fixed;
-      background-size: cover;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .overlay {
-      background-color: rgba(255, 255, 255, 0.9); /* Leve camada branca translúcida */
-      padding: 30px 20px;
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-      width: 90%;
-      max-width: 400px;
-      opacity: 90%;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    header img {
-      max-height: 60px;
-    }
-
-    h2 {
-      text-align: center;
-      color: var(--rosa-escuro);
-      margin-bottom: 20px;
-    }
-
-    input, select, textarea, button {
-      width: 100%;
-      margin-bottom: 15px;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      font-size: 16px;
-      
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--rosa-principal);
-      outline: none;
-    }
-
-    button {
-      background: linear-gradient(to right, #ec407a, #f48fb1);
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: linear-gradient(to right, #f06292, #f8bbd0);
-    }
-
-    footer {
-      text-align: center;
-      font-size: 12px;
-      color: #777;
-      margin-top: 15px;
-    }
-
-    @media (max-width: 480px) {
-      .overlay {
-        padding: 20px 15px;
-      }
-
-      h2 {
-        font-size: 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="overlay">
-    <header>
-      <!-- Substitua o src pelo logo do cliente se desejar -->
-      <!-- <img src="logo.png" alt="Logo"> -->
-    </header>
-
-    <h2>Agende seu horário</h2>
-
-    <form id="form-agendamento">
-      <input type="text" name="nome" placeholder="Seu nome completo" required />
-      <input type="tel" name="telefone" placeholder="Telefone com DDD" required />
-      <input type="date" name="data" required />
-      <select name="hora" id="hora" required></select>
-      <textarea name="obs" placeholder="Alguma observação?"></textarea>
-      <button type="submit">Agendar</button>
-    </form>
-
-    <footer>
-      © 2025 SeuNegócio - Todos os direitos reservados
-    </footer>
-  </div>
-
-  <script>
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbz6Wb0_OGPBPSX-Bb6tGl3_RDbEKsXhmE3NJi2iahQ02ROjEFYweuONvsY3Z1my8Pz0/exec';
-
-    const horariosFixos = [];
-    for (let h = 8; h < 17; h++) {
-      horariosFixos.push(`${String(h).padStart(2, '0')}:00`);
-      horariosFixos.push(`${String(h).padStart(2, '0')}:30`);
-    }
-    horariosFixos.push("17:00");
-
-    const inputData = document.querySelector('input[name="data"]');
-    const selectHora = document.getElementById('hora');
-    const hoje = new Date().toISOString().split('T')[0];
-    inputData.min = hoje;
-
-    inputData.addEventListener('change', async () => {
-      const dataISO = inputData.value;
-      if (!dataISO) return;
-
-      const [ano, mes, dia] = dataISO.split('-');
-      const dataBR = `${dia}/${mes}/${ano}`;
-
-      try {
-        const res = await fetch(`${scriptUrl}?data=${encodeURIComponent(dataBR)}`);
-        const ocupados = await res.json();
-
-        const disponiveis = horariosFixos.filter(h => !ocupados.includes(h));
-        selectHora.innerHTML = '';
-
-        if (disponiveis.length === 0) {
-          const op = document.createElement('option');
-          op.textContent = 'Sem horários disponíveis';
-          op.disabled = true;
-          selectHora.appendChild(op);
-          selectHora.disabled = true;
-        } else {
-          disponiveis.forEach(hora => {
-            const op = document.createElement('option');
-            op.value = hora;
-            op.textContent = hora;
-            selectHora.appendChild(op);
-          });
-          selectHora.disabled = false;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Profissional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'booked': '#ef4444', // Red-500
+                    },
+                }
+            }
         }
-      } catch (err) {
-        alert('Erro ao buscar horários. Tente novamente.');
-        console.error(err);
-      }
-    });
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .calendar-day-cell {
+            min-height: 80px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calendar-day-cell:hover {
+            background-color: #e5e7eb;
+        }
+        .has-event {
+            background-color: #fca5a5 !important;
+        }
+        .has-event:hover {
+            background-color: #f87171 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col lg:flex-row items-start lg:items-center justify-center p-4 gap-8">
 
-    document.getElementById('form-agendamento').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
+    <!-- Painel de Agendamento -->
+    <div class="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 space-y-6">
+        <h1 class="text-3xl font-bold text-center text-gray-800">Agendar Novo Serviço</h1>
+        <p class="text-center text-gray-500">Este é um simulador. Ele verifica se o horário está livre antes de agendar.</p>
 
-      const partes = data.data.split('-');
-      data.data = `${partes[2]}/${partes[1]}/${partes[0]}`;
-      data.hora = data.hora.slice(0, 5);
+        <!-- Formulário de Agendamento -->
+        <form id="scheduleForm" class="space-y-4">
+            <div>
+                <label for="clientName" class="block text-sm font-medium text-gray-700">Nome do Cliente</label>
+                <input type="text" id="clientName" name="clientName" placeholder="Nome Completo" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+            </div>
+            
+            <div>
+                <label for="clientPhone" class="block text-sm font-medium text-gray-700">Telefone (opcional)</label>
+                <input type="tel" id="clientPhone" name="clientPhone" placeholder="(99) 99999-9999" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
 
-      try {
-        const res = await fetch(scriptUrl, {
-          method: 'POST',
-          body: JSON.stringify(data)
+            <div>
+                <label for="serviceType" class="block text-sm font-medium text-gray-700">Tipo de Serviço</label>
+                <input type="text" id="serviceType" name="serviceType" placeholder="Ex: Corte de Cabelo" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+            </div>
+            
+            <div>
+                <label for="servicePrice" class="block text-sm font-medium text-gray-700">Preço do Serviço</label>
+                <input type="number" id="servicePrice" name="servicePrice" placeholder="Ex: 50.00" min="0" step="0.01" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+            </div>
+
+            <div>
+                <label for="eventDate" class="block text-sm font-medium text-gray-700">Data</label>
+                <input type="date" id="eventDate" name="eventDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+            </div>
+
+            <div>
+                <label for="eventTime" class="block text-sm font-medium text-gray-700">Hora</label>
+                <input type="time" id="eventTime" name="eventTime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+            </div>
+            
+            <div>
+                <label for="eventNotes" class="block text-sm font-medium text-gray-700">Observações (opcional)</label>
+                <textarea id="eventNotes" name="eventNotes" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Detalhes adicionais do serviço..."></textarea>
+            </div>
+            
+            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                Agendar
+            </button>
+        </form>
+
+        <!-- Área de Mensagem (Feedback para o usuário) -->
+        <div id="messageBox" class="p-4 text-center rounded-md text-sm transition-all duration-300 ease-in-out hidden"></div>
+    </div>
+
+    <!-- Visualização do Calendário e Painel de Resumo -->
+    <div class="flex flex-col gap-8 w-full max-w-xl">
+        <div class="bg-white shadow-xl rounded-2xl p-8 space-y-6">
+            <div class="flex items-center justify-between">
+                <button id="prevMonth" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:bg-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h2 id="currentMonthYear" class="text-xl font-bold text-gray-800"></h2>
+                <button id="nextMonth" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:bg-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-gray-600 font-medium">
+                <span>Dom</span>
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
+            </div>
+            <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+                <!-- As células do calendário serão geradas aqui pelo JS -->
+            </div>
+        </div>
+        
+        <!-- Painel de Resumo de Agendamentos -->
+        <div class="bg-white shadow-xl rounded-2xl p-8 space-y-4">
+            <h2 class="text-2xl font-bold text-center text-gray-800">Resumo de Agendamentos</h2>
+            <div id="appointments-panel" class="space-y-4">
+                <!-- A lista de agendamentos será gerada aqui pelo JS -->
+                <p class="text-center text-gray-500" id="no-appointments-message">Nenhum agendamento encontrado.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- JavaScript para o Agendamento, Calendário e Painel de Resumo ---
+
+        // Dados de simulação
+        let mockEvents = [
+            { id: 1, clientName: 'Ana Maria', clientPhone: '5511987654321', serviceType: 'Corte e Escova', servicePrice: 150.00, notes: 'Cliente preferiu o horario da tarde', start: '2025-08-20T10:00:00', end: '2025-08-20T11:00:00' },
+            { id: 2, clientName: 'Dr. Smith', clientPhone: '', serviceType: 'Consulta', servicePrice: 200.00, notes: '', start: '2025-08-22T15:30:00', end: '2025-08-22T16:00:00' },
+            { id: 3, clientName: 'Empresa ABC', clientPhone: '', serviceType: 'Visita Técnica', servicePrice: 500.00, notes: '', start: '2025-08-25T11:00:00', end: '2025-08-25T12:00:00' },
+            { id: 4, clientName: 'Novo evento', clientPhone: '', serviceType: 'Serviço Agendado', servicePrice: 75.00, notes: '', start: '2025-09-05T14:00:00', end: '2025-09-05T15:00:00' },
+        ];
+
+        let currentViewDate = new Date();
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        // Função para exibir mensagens na caixa de feedback
+        function showMessage(text, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-blue-100', 'text-blue-700');
+
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-100', 'text-green-700');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                messageBox.classList.add('bg-blue-100', 'text-blue-700');
+            }
+
+            messageBox.classList.remove('hidden');
+        }
+
+        // NOVO: Função que remove eventos expirados (mais de 1 hora no passado)
+        function removeExpiredEvents() {
+            const now = new Date();
+            mockEvents = mockEvents.filter(event => {
+                const eventEnd = new Date(event.end);
+                const expiryTime = new Date(eventEnd.getTime() + 60 * 60 * 1000); // Adiciona 1 hora
+                return expiryTime > now;
+            });
+            updateAllViews();
+        }
+
+        // NOVO: Chama a função de remoção a cada 30 segundos
+        setInterval(removeExpiredEvents, 30000);
+
+        // Função que simula a verificação de disponibilidade a partir dos mockEvents
+        async function checkAvailability(startDateTime) {
+            showMessage("Verificando disponibilidade...", 'info');
+            
+            // SIMULAÇÃO: Atraso para imitar uma chamada de rede
+            return new Promise(resolve => setTimeout(() => {
+                const isBooked = mockEvents.some(event => {
+                    const eventStart = new Date(event.start);
+                    const eventEnd = new Date(event.end);
+                    const requested = new Date(startDateTime);
+                    
+                    // Verifica se o novo evento colide com algum existente
+                    return requested >= eventStart && requested < eventEnd;
+                });
+                resolve(!isBooked);
+            }, 1000));
+        }
+
+        // Função que simula a chamada à API do Google Calendar para criar o evento
+        async function createGoogleCalendarEvent(eventDetails) {
+            console.log("Simulando agendamento com os seguintes detalhes:", eventDetails);
+            
+            // SIMULAÇÃO: Adiciona o novo evento ao array de eventos
+            const newEvent = {
+                id: Date.now(),
+                clientName: eventDetails.clientName,
+                clientPhone: eventDetails.clientPhone,
+                serviceType: eventDetails.serviceType,
+                servicePrice: eventDetails.servicePrice,
+                notes: eventDetails.notes,
+                start: eventDetails.startDateTime,
+                end: new Date(new Date(eventDetails.startDateTime).getTime() + 60 * 60 * 1000).toISOString(), // Evento de 1 hora
+            };
+            mockEvents.push(newEvent);
+
+            // SIMULAÇÃO: Atraso para imitar uma chamada de rede
+            return new Promise(resolve => setTimeout(() => {
+                const isSuccess = Math.random() > 0.1; // 90% de chance de sucesso
+                if (isSuccess) {
+                    resolve({ id: newEvent.id, status: 'confirmed' });
+                } else {
+                    reject(new Error("Erro de simulação: Não foi possível agendar o evento."));
+                }
+            }, 1500));
+        }
+
+        // NOVO: Função para excluir um evento
+        function deleteEvent(eventId) {
+            mockEvents = mockEvents.filter(event => event.id !== eventId);
+            updateAllViews();
+            showMessage("Agendamento excluído com sucesso.", 'success');
+        }
+
+        // NOVO: Renderiza o painel de resumo de agendamentos
+        function renderAppointmentsPanel() {
+            const panel = document.getElementById('appointments-panel');
+            panel.innerHTML = '';
+            
+            const sortedEvents = [...mockEvents].sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            if (sortedEvents.length === 0) {
+                panel.innerHTML = '<p class="text-center text-gray-500">Nenhum agendamento encontrado.</p>';
+                return;
+            }
+
+            sortedEvents.forEach(event => {
+                const startDate = new Date(event.start);
+                const dateStr = startDate.toLocaleDateString('pt-BR');
+                const timeStr = startDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                const panelCard = document.createElement('div');
+                panelCard.classList.add('bg-gray-50', 'rounded-lg', 'p-4', 'shadow-sm', 'space-y-2');
+                panelCard.innerHTML = `
+                    <p><strong>Data:</strong> ${dateStr}</p>
+                    <p><strong>Hora:</strong> ${timeStr}</p>
+                    <p><strong>Cliente:</strong> ${event.clientName}</p>
+                    <p><strong>Telefone:</strong> ${event.clientPhone || 'Não informado'}</p>
+                    <p><strong>Serviço:</strong> ${event.serviceType} - R$ ${event.servicePrice.toFixed(2)}</p>
+                    <p><strong>Observações:</strong> ${event.notes || 'Nenhuma'}</p>
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                        <a href="https://wa.me/${event.clientPhone}?text=${encodeURIComponent(`Olá ${event.clientName}, estou confirmando nosso agendamento para o dia ${dateStr} às ${timeStr}.`)}" target="_blank" class="flex-1 text-center py-2 px-4 rounded-md text-white bg-green-500 hover:bg-green-600 transition duration-150 ease-in-out">
+                            WhatsApp
+                        </a>
+                        <button onclick="deleteEvent(${event.id})" class="flex-1 py-2 px-4 rounded-md text-white bg-red-500 hover:bg-red-600 transition duration-150 ease-in-out">
+                            Excluir
+                        </button>
+                    </div>
+                `;
+                panel.appendChild(panelCard);
+            });
+        }
+
+        // Lidar com o envio do formulário
+        document.getElementById('scheduleForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const clientName = document.getElementById('clientName').value;
+            const clientPhone = document.getElementById('clientPhone').value;
+            const serviceType = document.getElementById('serviceType').value;
+            const servicePrice = parseFloat(document.getElementById('servicePrice').value);
+            const eventNotes = document.getElementById('eventNotes').value;
+            const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value;
+
+            const startDateTime = new Date(`${date}T${time}:00`).toISOString();
+            
+            const eventDetails = {
+                clientName,
+                clientPhone,
+                serviceType,
+                servicePrice,
+                notes: eventNotes,
+                startDateTime
+            };
+
+            try {
+                const isAvailable = await checkAvailability(startDateTime);
+
+                if (isAvailable) {
+                    await createGoogleCalendarEvent(eventDetails);
+                    showMessage("Evento agendado com sucesso!", 'success');
+                    updateAllViews();
+                } else {
+                    showMessage("Desculpe, este horário já está ocupado. Por favor, escolha outro.", 'error');
+                }
+            } catch (error) {
+                console.error("Ocorreu um erro:", error);
+                showMessage("Ocorreu um erro ao agendar o evento. Tente novamente.", 'error');
+            }
         });
 
-        const texto = await res.text();
+        // --- Funções de Visualização do Calendário ---
 
-        if (texto === 'OK') {
-          alert('✅ Agendamento realizado com sucesso!');
-          e.target.reset();
-          selectHora.innerHTML = '';
-        } else {
-          alert(`❌ Erro: ${texto}`);
+        // Renderiza o calendário para o mês e ano dados
+        function renderCalendar(year, month) {
+            const calendarGrid = document.getElementById('calendar-grid');
+            calendarGrid.innerHTML = '';
+            
+            document.getElementById('currentMonthYear').textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Preenche os dias vazios no início do mês
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.classList.add('p-2', 'rounded-md');
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Preenche os dias do mês
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.classList.add('p-2', 'rounded-md', 'border', 'border-gray-200', 'flex', 'flex-col', 'items-start', 'justify-start', 'calendar-day-cell');
+                
+                const dayNumber = document.createElement('span');
+                dayNumber.textContent = day;
+                dayNumber.classList.add('font-bold', 'text-gray-800');
+                dayCell.appendChild(dayNumber);
+
+                dayCell.dataset.date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                calendarGrid.appendChild(dayCell);
+            }
         }
-      } catch (err) {
-        alert('❌ Erro ao enviar agendamento');
-        console.error(err);
-      }
-    });
-  </script>
+
+        // Adiciona os eventos ao calendário renderizado
+        function addEventsToCalendar() {
+            const dayCells = document.querySelectorAll('.calendar-day-cell');
+            
+            dayCells.forEach(cell => {
+                const cellDate = cell.dataset.date;
+                const eventsOnDay = mockEvents.filter(event => {
+                    const eventDate = new Date(event.start).toISOString().slice(0, 10);
+                    return eventDate === cellDate;
+                });
+                
+                if (eventsOnDay.length > 0) {
+                    cell.classList.add('has-event');
+                    cell.style.backgroundColor = 'var(--booked)';
+                    const eventTitle = document.createElement('div');
+                    eventTitle.textContent = eventsOnDay[0].clientName;
+                    eventTitle.classList.add('text-xs', 'text-gray-700', 'mt-1', 'truncate', 'w-full');
+                    cell.appendChild(eventTitle);
+                }
+            });
+        }
+        
+        // Função para atualizar todas as visualizações (calendário e painel)
+        function updateAllViews() {
+            const year = currentViewDate.getFullYear();
+            const month = currentViewDate.getMonth();
+            renderCalendar(year, month);
+            addEventsToCalendar();
+            renderAppointmentsPanel();
+        }
+
+        // Event Listeners para a navegação do calendário
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentViewDate.setMonth(currentViewDate.getMonth() - 1);
+            updateAllViews();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentViewDate.setMonth(currentViewDate.getMonth() + 1);
+            updateAllViews();
+        });
+
+        // Inicializa o calendário e o painel na carga da página
+        window.onload = updateAllViews;
+
+    </script>
 
 </body>
 </html>
